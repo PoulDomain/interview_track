@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JobMate • ATS SaaS Tool</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1025; --panel:#0f1735; --muted:#98a2b3; --text:#eef2ff; --accent:#7c3aed; --accent2:#06b6d4;
+}
+body.light{ --bg:#f6f8ff; --panel:#ffffff; --muted:#5b6475; --text:#0b1025; --accent:#4f46e5; --accent2:#0ea5e9; }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--text)}
+.header{position:fixed; top:0; left:0; right:0; height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; background:linear-gradient(90deg,#1d2448,#202b61 60%,#1a1f3d); color:#eaf0fb; box-shadow:0 10px 28px rgba(2,6,23,.4); z-index:1000}
+body.light .header{background:linear-gradient(90deg,#ffffff,#f6f8ff)}
+.header .brand{display:flex; flex-direction:column; line-height:1}
+.brand .logo{font-weight:900; font-size:20px; letter-spacing:.2px}
+.brand .tag{font-size:12px; opacity:.8}
+.theme-toggle{display:flex; align-items:center; gap:8px}
+.app{display:grid; grid-template-columns:240px 1fr; gap:16px; max-width:1200px; margin:0 auto; padding:76px 16px 16px}
+.sidebar{position:sticky; top:76px; align-self:start; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0)); border:1px solid rgba(255,255,255,.08); padding:12px; border-radius:14px}
+.sidebar .logo{display:flex; align-items:center; gap:10px; padding:10px 8px; margin-bottom:8px}
+.logo .mark{width:28px; height:28px; border-radius:9px; display:grid; place-items:center; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2));}
+.nav-btn{width:100%; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.08); background:transparent; color:inherit; margin-bottom:6px; cursor:pointer; transition:transform .08s ease, background .2s ease, border .2s ease}
+.nav-btn:hover{transform:translateY(-1px); background:rgba(255,255,255,.06)}
+.nav-btn.active{border-color:transparent; background:linear-gradient(135deg, rgba(124,58,237,.25), rgba(6,182,212,.25))}
+.small-muted{color:var(--muted); font-size:12px}
+main{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0)); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px}
+.cardish{background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; box-shadow:0 20px 50px rgba(2,6,23,.35); padding:12px}
+.table{color:inherit}
+input,textarea,select{background:rgba(255,255,255,.06) !important; color:inherit !important; border:1px solid rgba(255,255,255,.18) !important}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none}
+.btn-outline-light{border-color:rgba(255,255,255,.25)}
+.status-badge{padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid rgba(255,255,255,.2)}
+.status-badge.open{background:rgba(34,197,94,.15); border-color:rgba(34,197,94,.35)}
+.status-badge.applied{background:rgba(59,130,246,.15); border-color:rgba(59,130,246,.35)}
+.status-badge.rejected{background:rgba(244,63,94,.15); border-color:rgba(244,63,94,.35)}
+.badge-key{border:1px dashed rgba(255,255,255,.25); padding:2px 6px; border-radius:8px; margin:2px; display:inline-block}
+.panel{transition:opacity .22s ease, transform .22s ease}
+.panel.hiddening{opacity:0; transform:translateY(6px)}
+.fade-in{opacity:1}
+.fade-out{opacity:0}
+.footer{margin:18px auto 8px; max-width:1200px; color:var(--muted); font-size:12px; text-align:center}
+body.light .btn-outline-light{color:#0f1735; border-color:#cfd6e6}
+body.light .btn-outline-light:hover{background:#eef2ff}
+.nav-btn:focus{outline:2px solid transparent; box-shadow:0 0 0 3px rgba(124,58,237,.35)}
+@media (max-width: 960px){ .app{grid-template-columns:1fr} .sidebar{position:static; order:2} }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand">
+    <div class="logo">JobMate</div>
+    <div class="tag">Your smart job & interview tracker</div>
+  </div>
+  <div class="theme-toggle">
+    <span class="small-muted">Theme</span>
+    <input type="checkbox" id="themeToggleTop" />
+  </div>
+</header>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo"><div class="mark">JM</div><div><div style="font-weight:800">JobMate</div><div class="small-muted">ATS • Tracker • Analytics</div></div></div>
+    <button id="navJobs" class="nav-btn active"><i class="bi bi-card-list"></i><span>Jobs</span></button>
+    <button id="navAts" class="nav-btn"><i class="bi bi-file-earmark-person"></i><span>ATS Match</span></button>
+    <button id="navAnalytics" class="nav-btn"><i class="bi bi-bar-chart-line"></i><span>Analytics</span></button>
+    <button id="navExport" class="nav-btn"><i class="bi bi-upload"></i><span>Export / Import</span></button>
+    <div class="mt-2 small-muted">Local-first. Export CSV to back up.</div>
+  </aside>
+
+  <main>
+    <!-- JOBS -->
+    <section id="panelJobs" class="panel">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h3 style="margin:0">Jobs Dashboard</h3>
+          <div class="small-muted">Add jobs, contacts, notes — attach ATS scores</div>
+        </div>
+        <div class="d-flex gap-2">
+          <button id="exportCsvBtn" class="btn btn-outline-light btn-sm"><i class="bi bi-file-earmark-arrow-down"></i> Export CSV</button>
+          <input type="file" id="importCsvInput" accept=".csv" hidden />
+          <button id="importCsvBtn" class="btn btn-light btn-sm"><i class="bi bi-file-earmark-arrow-up"></i> Import CSV</button>
+          <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#jobModal"><i class="bi bi-plus-lg"></i> Add Job</button>
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-md-4"><input id="searchJobs" class="form-control form-control-sm" placeholder="Search company, role, recruiter, notes"/></div>
+        <div class="col-md-3">
+          <select id="filterStatus" class="form-select form-select-sm">
+            <option value="">All statuses</option>
+            <option>Open</option><option>Applied</option><option>Interview</option><option>Offer</option><option>Rejected</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-responsive cardish">
+        <table class="table table-hover align-middle">
+          <thead><tr>
+            <th>Company</th><th>Role</th><th>Recruiter</th><th>Contact</th><th>Status</th><th>ATS</th><th class="text-end">Actions</th>
+          </tr></thead>
+          <tbody id="jobsTbody"></tbody>
+        </table>
+        <div id="emptyJobs" class="small-muted p-2">No jobs yet. Click <b>Add Job</b> to begin.</div>
+      </div>
+    </section>
+
+    <!-- ATS MATCH -->
+    <section id="panelAts" class="panel" style="display:none">
+      <div class="row g-3">
+        <div class="col-lg-5">
+          <div class="cardish">
+            <h5>Resume</h5>
+            <div class="small-muted mb-2">Upload TXT / PDF / DOCX</div>
+            <input id="resumeFile" type="file" accept=".txt,.pdf,.docx" class="form-control form-control-sm mb-2" />
+            <textarea id="resumeText" rows="10" class="form-control" placeholder="Or paste resume text here..."></textarea>
+            <div class="small-muted mt-2" id="resumeMeta"></div>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="cardish">
+            <h5>Job Description</h5>
+            <textarea id="jdText" rows="7" class="form-control" placeholder="Paste job description here"></textarea>
+            <div class="d-flex gap-2 mt-2">
+              <button id="autoFillFromResume" class="btn btn-outline-light btn-sm"><i class="bi bi-magic"></i> Auto-Fill New Job</button>
+              <button id="runAtsBtn" class="btn btn-primary btn-sm"><i class="bi bi-cpu"></i> Run ATS</button>
+            </div>
+          </div>
+          <div id="atsResult" class="cardish mt-3" style="display:none">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="m-0">ATS Match</h5>
+              <div class="h4 m-0" id="atsScore">0%</div>
+            </div>
+            <div class="small-muted">Matched keywords</div>
+            <div id="matchedKeys" class="mb-2"></div>
+            <div class="small-muted">Missing / Priority Missing</div>
+            <div id="missingKeys" class="mb-2"></div>
+            <div class="d-flex gap-2 align-items-center">
+              <select id="attachSelect" class="form-select form-select-sm" style="max-width:320px"></select>
+              <button id="attachToJob" class="btn btn-outline-light btn-sm"><i class="bi bi-link-45deg"></i> Attach to Job</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ANALYTICS -->
+    <section id="panelAnalytics" class="panel" style="display:none">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <h5 class="m-0">Analytics</h5>
+          <div class="small-muted">Charts & recommendations</div>
+        </div>
+        <button id="exportAnalyticsBtn" class="btn btn-sm btn-outline-light">Export CSV</button>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-3"><div class="p-2 text-center cardish"><div class="small-muted">Total Jobs</div><div id="statTotal" class="h4">0</div></div></div>
+        <div class="col-md-3"><div class="p-2 text-center cardish"><div class="small-muted">Avg ATS</div><div id="statAvg" class="h4">0%</div></div></div>
+        <div class="col-md-3"><div class="p-2 text-center cardish"><div class="small-muted">Contacts</div><div id="statContacts" class="h4">0</div></div></div>
+        <div class="col-md-6"><div class="cardish"><canvas id="chartStatus" style="height:220px"></canvas></div></div>
+        <div class="col-md-6"><div class="cardish"><canvas id="chartScores" style="height:220px"></canvas></div></div>
+        <div class="col-12"><div class="cardish"><h6>Recommendations</h6><div id="recArea" class="small-muted"></div></div></div>
+      </div>
+    </section>
+
+    <!-- EXPORT / IMPORT -->
+    <section id="panelExport" class="panel" style="display:none">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <h5 class="m-0">Export / Import</h5>
+          <div class="small-muted">Backup or move your data between devices</div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <button class="btn btn-outline-light" id="exportCsvBtn2"><i class="bi bi-file-earmark-arrow-down"></i> Export CSV</button>
+        <button class="btn btn-light" id="importCsvBtn2"><i class="bi bi-file-earmark-arrow-up"></i> Import CSV</button>
+      </div>
+      <div class="small-muted mt-2">Tip: Keep regular backups if you're interviewing actively.</div>
+    </section>
+  </main>
+</div>
+<footer class="footer">© 2025 JobMate. All rights reserved.</footer>
+
+<!-- JOB MODAL -->
+<div class="modal fade" id="jobModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content" style="background:var(--panel); color:var(--text)">
+      <div class="modal-header">
+        <h5 class="modal-title" id="jobModalTitle">Add Job</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-2">
+          <div class="col-md-6"><label class="form-label small-muted">Company</label><input id="fCompany" class="form-control"/></div>
+          <div class="col-md-6"><label class="form-label small-muted">Role</label><input id="fRole" class="form-control"/></div>
+          <div class="col-md-6"><label class="form-label small-muted">Recruiter/Contact</label><input id="fRecruiter" class="form-control"/></div>
+          <div class="col-md-3"><label class="form-label small-muted">Phone</label><input id="fPhone" class="form-control"/></div>
+          <div class="col-md-3"><label class="form-label small-muted">Email</label><input id="fEmail" class="form-control"/></div>
+          <div class="col-md-4"><label class="form-label small-muted">Status</label>
+            <select id="fStatus" class="form-select">
+              <option>Open</option><option>Applied</option><option>Interview</option><option>Offer</option><option>Rejected</option>
+            </select>
+          </div>
+          <div class="col-md-4"><label class="form-label small-muted">ATS Score (optional)</label><input id="fAts" type="number" min="0" max="100" class="form-control"/></div>
+          <div class="col-12"><label class="form-label small-muted">Notes</label><textarea id="fNotes" rows="3" class="form-control"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+        <button id="saveJobBtn" class="btn btn-primary">Save Job</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- PDF.js for PDF text extraction -->
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';</script>
+<!-- Mammoth for DOCX -->
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script>
+// ====== STATE ======
+const LS_KEY = 'jobmate_store_v1';
+let store = JSON.parse(localStorage.getItem(LS_KEY)||'{}');
+store.jobs ||= [];
+let editingId = null;
+
+// ====== ELEMENTS ======
+const navJobs = document.getElementById('navJobs');
+const navAts = document.getElementById('navAts');
+const navAnalytics = document.getElementById('navAnalytics');
+const navExport = document.getElementById('navExport');
+const panelJobs = document.getElementById('panelJobs');
+const panelAts = document.getElementById('panelAts');
+const panelAnalytics = document.getElementById('panelAnalytics');
+const panelExport = document.getElementById('panelExport');
+
+const jobsTbody = document.getElementById('jobsTbody');
+const emptyJobs = document.getElementById('emptyJobs');
+const searchJobs = document.getElementById('searchJobs');
+const filterStatus = document.getElementById('filterStatus');
+
+const fCompany = document.getElementById('fCompany');
+const fRole = document.getElementById('fRole');
+const fRecruiter = document.getElementById('fRecruiter');
+const fPhone = document.getElementById('fPhone');
+const fEmail = document.getElementById('fEmail');
+const fStatus = document.getElementById('fStatus');
+const fAts = document.getElementById('fAts');
+const fNotes = document.getElementById('fNotes');
+const saveJobBtn = document.getElementById('saveJobBtn');
+
+const exportCsvBtn = document.getElementById('exportCsvBtn');
+const importCsvBtn = document.getElementById('importCsvBtn');
+const importCsvInput = document.getElementById('importCsvInput');
+
+const resumeFile = document.getElementById('resumeFile');
+const resumeText = document.getElementById('resumeText');
+const resumeMeta = document.getElementById('resumeMeta');
+const jdText = document.getElementById('jdText');
+const runAtsBtn = document.getElementById('runAtsBtn');
+const atsResult = document.getElementById('atsResult');
+const atsScoreEl = document.getElementById('atsScore');
+const matchedKeys = document.getElementById('matchedKeys');
+const missingKeys = document.getElementById('missingKeys');
+const attachSelect = document.getElementById('attachSelect');
+const attachToJob = document.getElementById('attachToJob');
+const autoFillFromResume = document.getElementById('autoFillFromResume');
+
+const statTotal = document.getElementById('statTotal');
+const statAvg = document.getElementById('statAvg');
+const statContacts = document.getElementById('statContacts');
+const exportAnalyticsBtn = document.getElementById('exportAnalyticsBtn');
+
+// ====== THEME ======
+const themeToggleTop = document.getElementById('themeToggleTop');
+const hiddenThemeToggle = document.createElement('input');
+hiddenThemeToggle.type='checkbox'; // for parity with previous logic if needed
+function applyTheme(mode){
+  document.body.classList.toggle('light', mode==='light');
+}
+function syncToggles(){ const isLight = document.body.classList.contains('light'); themeToggleTop.checked = isLight; }
+function setThemeFromToggle(checked){ const v = checked? 'light':'dark'; localStorage.setItem('jt_theme_v4', v); applyTheme(v); syncToggles(); }
+applyTheme(localStorage.getItem('jt_theme_v4')||'dark');
+syncToggles();
+themeToggleTop.addEventListener('change',()=> setThemeFromToggle(themeToggleTop.checked));
+
+// ====== NAV / PANELS ======
+function animateSwap(showEl){ const panels=[panelJobs,panelAts,panelAnalytics,panelExport]; panels.forEach(p=>{ if(p===showEl){ p.classList.remove('hiddening'); p.style.display=''; requestAnimationFrame(()=>{ p.classList.add('fade-in'); p.classList.remove('fade-out'); }); } else { if(p.style.display!=='none'){ p.classList.add('fade-out'); p.classList.add('hiddening'); setTimeout(()=>{ p.style.display='none'; p.classList.remove('hiddening'); }, 180); } } }); }
+function activate(tab){ [navJobs,navAts,navAnalytics,navExport].forEach(b=>b.classList.remove('active'));
+  if(tab==='jobs'){ navJobs.classList.add('active'); animateSwap(panelJobs); location.hash = '#jobs'; }
+  if(tab==='ats'){ navAts.classList.add('active'); animateSwap(panelAts); location.hash = '#ats'; }
+  if(tab==='analytics'){ navAnalytics.classList.add('active'); animateSwap(panelAnalytics); location.hash = '#analytics'; }
+  if(tab==='export'){ navExport.classList.add('active'); animateSwap(panelExport); location.hash = '#export'; }
+}
+navJobs.onclick=()=>activate('jobs'); navAts.onclick=()=>activate('ats'); navAnalytics.onclick=()=>activate('analytics'); navExport.onclick=()=>activate('export');
+const initialTab = (location.hash||'').replace('#','')||'jobs'; activate(initialTab);
+window.addEventListener('hashchange', ()=>{ const t=(location.hash||'').replace('#','')||'jobs'; activate(t); });
+
+// ====== HELPERS ======
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function badgeClass(status){ status=(status||'').toLowerCase(); if(status.includes('reject')) return 'rejected'; if(status.includes('interview')) return 'applied'; if(status.includes('offer')) return 'open'; if(status.includes('applied')) return 'applied'; return 'open'; }
+
+function persist(){ localStorage.setItem(LS_KEY, JSON.stringify(store)); renderJobs(); populateAttachSelect(); refreshAnalytics(); }
+
+// ====== JOBS RENDER ======
+function renderJobs(){ jobsTbody.innerHTML=''; const q=(searchJobs.value||'').toLowerCase(); const fs=filterStatus.value; let visible=0;
+  store.jobs.forEach(j=>{ if(fs && j.status!==fs) return; const hay=(j.company+' '+j.role+' '+j.recruiter+' '+(j.notes||'')).toLowerCase(); if(q && !hay.includes(q)) return; visible++;
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${escapeHtml(j.company)}</strong></td>
+      <td>${escapeHtml(j.role)}</td>
+      <td>${escapeHtml(j.recruiter)}</td>
+      <td>${j.phone?`<a href="tel:${encodeURIComponent(j.phone)}">${escapeHtml(j.phone)}</a>`:''}${j.email?'<br/>'+`<a href=\"mailto:${encodeURIComponent(j.email)}\">${escapeHtml(j.email)}</a>`:''}</td>
+      <td><span class=\"status-badge ${badgeClass(j.status)}\">${escapeHtml(j.status)}</span></td>
+      <td>${j.atsScore!=null? j.atsScore+'%':'—'}</td>
+      <td class=\"text-end\">
+        <button class=\"btn btn-sm btn-outline-light\" onclick=\"editJob('${j.id}')\"><i class=\"bi bi-pencil\"></i></button>
+        <button class=\"btn btn-sm btn-outline-danger\" onclick=\"deleteJob('${j.id}')\"><i class=\"bi bi-trash\"></i></button>
+      </td>`;
+    jobsTbody.appendChild(tr);
+  });
+  emptyJobs.style.display = visible? 'none' : '';
+  populateAttachSelect();
+}
+
+function clearJobForm(){ editingId=null; fCompany.value=''; fRole.value=''; fRecruiter.value=''; fPhone.value=''; fEmail.value=''; fStatus.value='Open'; fAts.value=''; fNotes.value=''; document.getElementById('jobModalTitle').textContent='Add Job'; }
+function fillJobForm(j){ document.getElementById('jobModalTitle').textContent='Edit Job'; fCompany.value=j.company||''; fRole.value=j.role||''; fRecruiter.value=j.recruiter||''; fPhone.value=j.phone||''; fEmail.value=j.email||''; fStatus.value=j.status||'Open'; fAts.value=j.atsScore??''; fNotes.value=j.notes||''; }
+
+window.editJob = function(id){ const j = store.jobs.find(x=>x.id===id); if(!j) return; editingId=id; fillJobForm(j); new bootstrap.Modal('#jobModal').show(); }
+window.deleteJob = function(id){ if(!confirm('Delete this job?')) return; store.jobs = store.jobs.filter(x=>x.id!==id); persist(); }
+
+saveJobBtn.addEventListener('click',()=>{
+  const data = {id: editingId||uid(), company:fCompany.value.trim(), role:fRole.value.trim(), recruiter:fRecruiter.value.trim(), phone:fPhone.value.trim(), email:fEmail.value.trim(), status:fStatus.value, atsScore: fAts.value? Number(fAts.value):null, notes:fNotes.value.trim(), createdAt: Date.now() };
+  if(!data.company || !data.role){ alert('Company and Role are required.'); return; }
+  const idx = store.jobs.findIndex(j=>j.id===data.id);
+  if(idx>-1) store.jobs[idx]=data; else store.jobs.push(data);
+  persist();
+  bootstrap.Modal.getInstance(document.getElementById('jobModal')).hide();
+  clearJobForm();
+});
+
+document.getElementById('jobModal').addEventListener('hidden.bs.modal', clearJobForm);
+searchJobs.addEventListener('input', renderJobs); filterStatus.addEventListener('change', renderJobs);
+
+// ====== CSV EXPORT/IMPORT ======
+function toCsv(){ const headers=['id','company','role','recruiter','phone','email','status','atsScore','notes','createdAt']; const rows=[headers.join(',')]; store.jobs.forEach(j=>{ const vals=headers.map(h=>{ let v=j[h]; if(v==null) v=''; v=(''+v).replaceAll('"','""'); if(v.includes(',')||v.includes('\n')) v='"'+v+'"'; return v; }); rows.push(vals.join(',')); }); return rows.join('\n'); }
+function download(name, text){ const blob=new Blob([text],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
+exportCsvBtn.addEventListener('click',()=> download(`jobmate_jobs_${new Date().toISOString().slice(0,10)}.csv`, toCsv()));
+exportAnalyticsBtn.addEventListener('click',()=> download(`jobmate_analytics_${new Date().toISOString().slice(0,10)}.csv`, toCsv()));
+importCsvBtn.addEventListener('click',()=> importCsvInput.click());
+importCsvInput.addEventListener('change',()=>{ const f=importCsvInput.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ const text=fr.result; const lines=text.split(/\r?\n/).filter(Boolean); const headers=lines.shift().split(','); const idx=(h)=> headers.indexOf(h);
+  const arr=lines.map(line=>{ // naive CSV split (handles quoted)
+    const cells=[]; let cur=''; let q=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(ch==='"'){ if(q && line[i+1]==='"'){ cur+='"'; i++; } else { q=!q; } } else if(ch===',' && !q){ cells.push(cur); cur=''; } else { cur+=ch; } } cells.push(cur);
+    const get=(name)=> cells[idx(name)]||'';
+    return {id:get('id')||uid(), company:get('company'), role:get('role'), recruiter:get('recruiter'), phone:get('phone'), email:get('email'), status:get('status')||'Open', atsScore:get('atsScore')? Number(get('atsScore')):null, notes:get('notes'), createdAt:Number(get('createdAt')||Date.now())};
+  });
+  store.jobs = arr; persist(); alert('Import complete'); };
+  fr.readAsText(f); });
+
+// Export panel mirror buttons
+const exportCsvBtn2 = document.getElementById('exportCsvBtn2');
+const importCsvBtn2 = document.getElementById('importCsvBtn2');
+if(exportCsvBtn2){ exportCsvBtn2.addEventListener('click', ()=> exportCsvBtn.click()); }
+if(importCsvBtn2){ importCsvBtn2.addEventListener('click', ()=> importCsvBtn.click()); }
+
+// ====== ATS ENGINE ======
+function extractKeywords(text){ text=(text||'').toLowerCase(); const words = text.match(/[a-zA-Z][a-zA-Z0-9\+\.#-]{1,}/g)||[]; const stop = new Set(['and','or','the','with','for','in','on','to','a','an','of','by','is','are','as']); const map=new Map(); words.forEach(w=>{ if(stop.has(w)) return; map.set(w,(map.get(w)||0)+1); }); const arr=[...map.entries()].sort((a,b)=>b[1]-a[1]); return arr.slice(0,80).map(([w,c])=>({word:w,weight:Math.min(3,1+Math.log10(c+1))})); }
+function scoreAts(resume, jd){ const rset=new Set((resume||'').toLowerCase().split(/[^a-z0-9\+#\.\-]+/)); const keys=extractKeywords(jd); let hit=0, total=0; const matched=[], missing=[], priority=[]; keys.forEach(k=>{ total+=k.weight; if(rset.has(k.word)){ hit+=k.weight; matched.push(k.word); } else { missing.push(k.word); if(k.weight>2) priority.push(k.word); } }); const score = total? Math.round((hit/total)*100):0; return {score, matched, missing, priority}; }
+function prettifyList(arr){ return arr.slice(0,30).map(w=>`<span class=\"badge-key\">${escapeHtml(w)}</span>`).join(' '); }
+
+runAtsBtn.addEventListener('click',()=>{ const resume=resumeText.value.trim(); const jd=jdText.value.trim(); if(!resume||!jd){ alert('Please provide both resume and job description.'); return; } const out=scoreAts(resume,jd); atsResult.style.display=''; atsScoreEl.textContent = out.score+"%"; matchedKeys.innerHTML = prettifyList(out.matched); const pr = out.priority.slice(0,15).map(w=>`<strong>${escapeHtml(w)}</strong>`); missingKeys.innerHTML = prettifyList(out.missing)+ (pr.length? `<div class='small-muted mt-1'>Priority: ${pr.join(', ')}</div>`:''); attachSelect.value = attachSelect.value || (store.jobs[0]?.id||''); attachSelect.dataset.score = out.score;
+});
+
+attachToJob.addEventListener('click',()=>{ const id=attachSelect.value; if(!id){ alert('Select a job to attach.'); return; } const j=store.jobs.find(x=>x.id===id); if(!j) return; const s = parseInt(atsScoreEl.textContent)||0; j.atsScore = s; j.notes = (j.notes? j.notes+"\n":"")+`[ATS] ${new Date().toLocaleString()} → ${s}%`;
+ persist(); alert('ATS attached to '+j.company+' • '+j.role); });
+
+function populateAttachSelect(){ attachSelect.innerHTML=''; store.jobs.forEach(j=>{ const opt=document.createElement('option'); opt.value=j.id; opt.textContent = `${j.company} – ${j.role}`; attachSelect.appendChild(opt); }); }
+
+// Auto-fill new job from resume (basic extraction)
+autoFillFromResume.addEventListener('click',()=>{ const text=(resumeText.value||''); const email = (text.match(/[\w.+-]+@[\w-]+\.[\w.-]+/)||[])[0]||''; const phone = (text.match(/\+?\d[\d\s().-]{7,}/)||[])[0]||''; // crude
+  fEmail.value = email; fPhone.value = phone; new bootstrap.Modal('#jobModal').show(); document.getElementById('jobModalTitle').textContent='Add Job (from Resume)'; });
+
+// Resume file parsing (TXT / PDF / DOCX)
+resumeFile.addEventListener('change', async ()=>{
+  const f = resumeFile.files[0]; if(!f) return; const ext=f.name.split('.').pop().toLowerCase(); resumeMeta.textContent = 'Parsing '+f.name+'...';
+  if(ext==='txt'){
+    const text = await f.text(); resumeText.value = text; resumeMeta.textContent = 'Loaded TXT'; return;
+  }
+  if(ext==='pdf'){
+    const buf = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data:buf}).promise; let full=''; for(let i=1;i<=pdf.numPages;i++){ const page=await pdf.getPage(i); const content=await page.getTextContent(); const strings=content.items.map(it=>it.str); full+=strings.join(' ')+'\n'; } resumeText.value = full; resumeMeta.textContent = `Parsed PDF (${pdf.numPages} pages)`; return;
+  }
+  if(ext==='docx'){
+    const arrayBuffer = await f.arrayBuffer(); const res = await window.mammoth.extractRawText({arrayBuffer}); resumeText.value = res.value; resumeMeta.textContent = 'Parsed DOCX'; return;
+  }
+  resumeMeta.textContent='Unsupported file type';
+});
+
+// ====== ANALYTICS ======
+let chartStatus, chartScores;
+function refreshAnalytics(){ const total=store.jobs.length; statTotal.textContent= total; const contacts = store.jobs.filter(j=>j.recruiter||j.phone||j.email).length; statContacts.textContent = contacts; const atsVals = store.jobs.map(j=>j.atsScore).filter(v=>typeof v==='number'); const avg = atsVals.length? Math.round(atsVals.reduce((a,b)=>a+b,0)/atsVals.length) : 0; statAvg.textContent = avg+'%';
+  const buckets = {Open:0,Applied:0,Interview:0,Offer:0,Rejected:0}; store.jobs.forEach(j=>{ buckets[j.status] = (buckets[j.status]||0)+1; });
+  const ctx1 = document.getElementById('chartStatus'); const ctx2 = document.getElementById('chartScores');
+  const statusData = {labels:Object.keys(buckets), datasets:[{label:'Jobs', data:Object.values(buckets)}]};
+  const scoreData = {labels: store.jobs.map(j=> j.company+" – "+j.role), datasets:[{label:'ATS %', data: store.jobs.map(j=> j.atsScore||0)}]};
+  if(chartStatus) chartStatus.destroy(); if(chartScores) chartScores.destroy();
+  chartStatus = new Chart(ctx1, { type:'pie', data:statusData, options:{ plugins:{legend:{display:true}}}});
+  chartScores = new Chart(ctx2, { type:'bar', data:scoreData, options:{ scales:{y:{beginAtZero:true, max:100}}}});
+  // Recommendations
+  const rec=[]; const low=store.jobs.filter(j=> (j.atsScore||0)<50); if(low.length) rec.push(`Improve resume for ${low.length} low ATS matches (<50%).`);
+  const highRejected=store.jobs.filter(j=> (j.atsScore||0)>=70 && /reject/i.test(j.status)); if(highRejected.length) rec.push(`${highRejected.length} high-ATS but rejected — tailor cover letter or keywords.`);
+  const missingContact=store.jobs.filter(j=> !j.email && !j.phone); if(missingContact.length) rec.push(`${missingContact.length} jobs missing contact info — add recruiter email/phone.`);
+  document.getElementById('recArea').innerHTML = rec.map(r=>`• ${escapeHtml(r)}`).join('<br/>') || 'No recommendations yet — run ATS and add more jobs.';
+}
+
+// ====== INIT ======
+function populateAttachSelect(){ attachSelect.innerHTML=''; store.jobs.forEach(j=>{ const opt=document.createElement('option'); opt.value=j.id; opt.textContent = `${j.company} – ${j.role}`; attachSelect.appendChild(opt); }); }
+renderJobs(); populateAttachSelect(); refreshAnalytics();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
